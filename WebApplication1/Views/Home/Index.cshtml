@@ -1,0 +1,113 @@
+﻿@using GridMvc.Html;
+@model IEnumerable<WebApplication1.Models.User>
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutPage1.cshtml";
+}
+
+<script src="~/Scripts/jquery-3.0.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#checkall").click(function () {
+            if ($(this).is(":checked")) {
+                $(".ckbox").prop("checked", true)
+            }
+            else {
+                $(".ckbox").prop("checked", false)
+            }
+        });
+    });
+
+</script>
+<link href="~/Content/bootstrap.css" rel="stylesheet" />
+
+@{
+    WebGrid grid = new WebGrid(source: Model, canSort: false);
+}
+
+<p>
+    <div class="marginButton">
+        <input type="button" id="Block" value="Block" />
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+        <button class="btn btn-primary" id="Delete" value="Delete">
+            <i class="fa fa-trash-o fa-lg"></i>
+        </button>
+        <button class="btn btn-primary" id="Unblock" value="Unblock">
+            <i class="fa fa-unlock-alt" aria-hidden="true"></i>
+        </button>
+    </div>
+</p>
+
+<div class="somecontainer">
+    @MvcHtmlString.Create(
+  @grid.GetHtml(
+tableStyle: "gridtable",
+htmlAttributes: new { id = "checkableGrid" },
+columns: grid.Columns
+  (
+      grid.Column(format: @<text> <input type="checkbox" class="ckbox" value="@item.Id" name="ids" /> </text>, header: "{checkall}"),
+grid.Column("Id", "Id"),
+grid.Column("Name", "Name"),
+grid.Column("Email", "Email"),
+grid.Column("RegDate", "RegDate"),
+grid.Column("LoginDate", "LoginDate"),
+grid.Column("Status", "Status")
+)).ToString().Replace("{checkall}", "<input type='checkbox' id='checkall' />"));
+
+</div>
+
+
+<script>
+    function arrayselect() {
+        var statusArr = $("#checkableGrid td:nth-child(1)")
+        var i;
+        var checkedvalue = [];
+        for (i = 0; i < statusArr.length; i++) {
+            var flag = statusArr[i].children[0].checked;
+            if (flag) {
+                checkedvalue.push(statusArr[i].children[0].value);
+            }
+        }
+        return checkedvalue;
+    }
+
+    $("#Delete").on('click', function () {
+        var checkedvalue = arrayselect();
+        $.ajax({
+            type: 'post',
+            url: 'Grid/Delete',
+            data: { values: checkedvalue },
+            success: (result) => {
+                location.reload()
+            }
+        })
+    })
+
+
+
+    $("#Block").on('click', function () {
+        var checkedvalue = arrayselect();
+        $.ajax({
+            type: 'post',
+            url: 'Grid/Block',
+            data: { values: checkedvalue },
+            success: (result) => {
+                location.reload()
+            }
+        })
+    })
+
+
+    $("#Unblock").on('click', function () {
+        var checkedvalue = arrayselect();
+        $.ajax({
+            type: 'post',
+            url: 'Grid/Unblock',
+            data: { values: checkedvalue },
+            success: (result) => {
+                location.reload()
+            }
+        })
+    })
+</script>
